@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Eye, EyeOff, KeyRound, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { loginSchema } from '../../utils/validators';
-import { AuthService } from '../../services/auth.service';
-import { useAuthStore } from '../../store/auth.store';
-import { LockedAccountState } from '../../components/auth/LockedAccountState';
-import { SECURITY_RULES } from '../../utils/constants';
+import { loginSchema } from '../../../utils/validators';
+import { AuthService } from '../../../services/auth.service';
+import { useAuthStore } from '../../../store/auth.store';
+import { LockedAccountState } from '../../../components/auth/LockedAccountState';
+import { SECURITY_RULES } from '../../../utils/constants';
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 

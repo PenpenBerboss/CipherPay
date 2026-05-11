@@ -9,9 +9,9 @@ import { AuthGuard, GuestGuard } from './components/guards/AuthGuard';
 
 // Pages
 import Landing from './pages/Landing';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import OtpVerification from './pages/auth/OtpVerification';
+import Login from './features/auth/pages/Login';
+import Register from './features/auth/pages/Register';
+import OtpVerification from './features/auth/pages/OtpVerification';
 import SetupMFA from './pages/dashboard/SetupMFA';
 import Dashboard from './pages/dashboard/Dashboard';
 import Transactions from './pages/dashboard/Transactions';

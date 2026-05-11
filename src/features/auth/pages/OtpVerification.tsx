@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { ShieldAlert, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { OtpInput } from '../../components/auth/OtpInput';
-import { useMFA } from '../../hooks/useMFA';
-import { SECURITY_RULES } from '../../utils/constants';
+import { OtpInput } from '../../../components/auth/OtpInput';
+import { useMFA } from '../../../hooks/useMFA';
+import { SECURITY_RULES } from '../../../utils/constants';
 
 export default function OtpVerification() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "CipherPay",
+  "description": "Une application e-Wallet sécurisée de démonstration, conçue autour du thème de la 'Conception et Réalisation d'un système cryptographique des transactions financières et des données sensibles'.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

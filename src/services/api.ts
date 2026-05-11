@@ -46,16 +46,14 @@ api.interceptors.response.use(
         const refreshToken = TokenService.getRefreshToken();
         if (!refreshToken) throw new Error('No refresh token available');
 
-        // Call the real refresh endpoint on the backend
-        // const { data } = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, { token: refreshToken });
-        // TokenService.setToken(data.accessToken);
-        // api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+        // Appel du véritable endpoint de rafraichissement sur le backend
+        const { data } = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, { refreshToken: refreshToken });
         
-        // originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
-        // return api(originalRequest);
+        TokenService.setToken(data.accessToken);
+        api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
         
-        // MOCK BEHAVIOR: Just throw for now since we have no backend
-        throw new Error('Refresh not implemented in mock');
+        originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
+        return api(originalRequest);
       } catch (refreshError) {
         // If refresh fails, kill the session entirely
         TokenService.clearAll();

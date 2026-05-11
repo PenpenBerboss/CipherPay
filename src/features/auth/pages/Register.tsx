@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Network, AlertCircle, EyeOff, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { registerSchema } from '../../utils/validators';
-import { PasswordStrengthIndicator } from '../../components/auth/PasswordStrengthIndicator';
-import { AuthService } from '../../services/auth.service';
+import { registerSchema } from '../../../utils/validators';
+import { PasswordStrengthIndicator } from '../../../components/auth/PasswordStrengthIndicator';
+import { AuthService } from '../../../services/auth.service';
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
