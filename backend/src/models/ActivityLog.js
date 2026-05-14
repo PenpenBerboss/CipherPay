@@ -1,16 +1,25 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const User = require('./User');
+// backend/src/models/ActivityLog.js
+const pool = require('../config/db');
 
-const ActivityLog = sequelize.define('ActivityLog', {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    action: { type: DataTypes.STRING, allowNull: false },
-    ip_address: { type: DataTypes.STRING, allowNull: false },
-    user_agent: { type: DataTypes.STRING, allowNull: true },
-    status: { type: DataTypes.STRING, allowNull: false },
-});
+class ActivityLog {
+  static async log({ userId = null, action, ipAddress = null, userAgent = null, details = null }) {
+    await pool.execute(
+      `INSERT INTO activity_logs (user_id, action, ip_address, user_agent, details)
+       VALUES (?, ?, ?, ?, ?)`,
+      [userId, action, ipAddress, userAgent, details ? JSON.stringify(details) : null]
+    );
+  }
 
-User.hasMany(ActivityLog, { foreignKey: 'user_id' });
-ActivityLog.belongsTo(User, { foreignKey: 'user_id' });
+  static async getForUser(userId, limit = 50) {
+    const [rows] = await pool.execute(
+      `SELECT * FROM activity_logs
+       WHERE user_id = ?
+       ORDER BY created_at DESC
+       LIMIT ?`,
+      [userId, limit]
+    );
+    return rows;
+  }
+}
 
 module.exports = ActivityLog;

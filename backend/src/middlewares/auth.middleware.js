@@ -1,19 +1,26 @@
-const jwtUtil = require('../utils/jwt');
-const User = require('../models/User');
+// backend/src/middlewares/auth.middleware.js
+const { verifyToken } = require('../utils/jwt');
 
-module.exports = async (req, res, next) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ message: 'Accès non autorisé' });
+const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
 
-        const decoded = jwtUtil.verifyToken(token);
-        const user = await User.findByPk(decoded.id);
-        
-        if (!user) return res.status(401).json({ message: 'Utilisateur introuvable' });
-
-        req.user = user;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Token invalide' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Token manquant ou mal formé.' });
     }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      return res.status(401).json({ message: 'Token invalide ou expiré.' });
+    }
+
+    req.user = decoded; // { userId, email }
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Authentification échouée.' });
+  }
 };
+
+module.exports = authMiddleware;

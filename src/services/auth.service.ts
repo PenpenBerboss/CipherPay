@@ -1,118 +1,80 @@
-import { api } from './api';
-import { MfaSetupData, User } from '../types/auth.types';
-import { mockUsers, generateMockJWT } from '../mock/auth';
+// src/services/auth.service.ts
+import api from './api';
+import TokenService from './token.service';
 
-/**
- * NODE.JS INTEGRATION NOTE:
- * These methods currently use \`setTimeout\` to mock network latency.
- * When real backend endpoints are ready, replace the \`Promise\` resolution
- * with the annotated \`api.post()\` calls.
- * 
- * SÉCURITÉ BACKEND :
- * - Le mot de passe ne doit jamais être renvoyé par le backend.
- * - Hachage côté serveur via bcryptjs : const hash = await bcrypt.hash(password, 12);
- * - Vérification via : const match = await bcrypt.compare(password, user.passwordHash)
- */
-export const AuthService = {
-    // ------------------------------------------------------------------------
-    // LOGIN
-    // ------------------------------------------------------------------------
-    login: async (email: string, password: string): Promise<{ user?: User; token?: string; requiresMfa?: boolean; mfaTempToken?: string }> => {
-        // REAL IMPLEMENTATION:
-        // const { data } = await api.post('/auth/login', { email, password });
-        // return data;
+const AuthService = {
 
-        // MOCK IMPLEMENTATION:
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const user = mockUsers[email];
-                // Simulated validation (NEVER generic in backend logic, always in frontend presentation)
-                if (!user || password.length < 4) { // Dummy password validation just to simulate a match
-                    // SECURITY REQUIREMENT: Never reveal if the email exists or password is wrong. Always generic.
-                    return reject(new Error('Identifiants invalides'));
-                }
+  // Inscription
+  async register(data: { name: string; email: string; password: string; confirmPassword: string }) {
+    const parts = data.name.trim().split(' ');
+    const firstName = parts[0] || 'Utilisateur';
+    const lastName  = parts.slice(1).join(' ') || 'Inconnu';
+    const res = await api.post('/auth/register', {
+      email: data.email,
+      password: data.password,
+      firstName,
+      lastName,
+    });
+    return res.data;
+  },
 
-                if (user.mfaEnabled) {
-                    // Send a temporary token to proceed to MFA step, do not send actual JWT yet
-                    resolve({ requiresMfa: true, mfaTempToken: 'temp_mfa_token_mock' });
-                } else {
-                    // Direct login
-                    const { passwordHash, ...safeUser } = user;
-                    resolve({ user: safeUser, token: generateMockJWT(safeUser) });
-                }
-            }, 800);
-        });
-    },
-
-    // ------------------------------------------------------------------------
-    // VERIFY MFA OTP
-    // ------------------------------------------------------------------------
-    verifyMfa: async (otp: string, tempToken: string): Promise<{ user: User; token: string }> => {
-        // REAL IMPLEMENTATION:
-        // const { data } = await api.post('/auth/mfa/verify', { otp }, { headers: { 'X-Temp-Token': tempToken }});
-        // return data;
-
-        // MOCK IMPLEMENTATION:
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (otp === '000000') {
-                    // Generic Error for MFA
-                    return reject(new Error('Code de vérification invalide ou expiré'));
-                }
-                const user = mockUsers['test@node.net']; // Mock fetching the user associated with tempToken
-                const { passwordHash, ...safeUser } = user;
-                resolve({ user: safeUser, token: generateMockJWT(safeUser) });
-            }, 800);
-        });
-    },
-
-    // ------------------------------------------------------------------------
-    // REGISTER
-    // ------------------------------------------------------------------------
-    register: async (data: any) => {
-        // REAL IMPLEMENTATION:
-        // return await api.post('/auth/register', data);
-        
-        return new Promise((resolve) => {
-            setTimeout(() => resolve({ success: true }), 1000);
-        });
-    },
-
-    // ------------------------------------------------------------------------
-    // SETUP MFA (Generate Secret & QR Code)
-    // ------------------------------------------------------------------------
-    setupMfa: async (): Promise<MfaSetupData> => {
-        // REAL IMPLEMENTATION:
-        // BACKEND SHOULD USE 'speakeasy' or 'otplib' to generate the secret
-        // AND 'qrcode' to generate the Google Authenticator URI.
-        // const { data } = await api.post('/auth/mfa/setup');
-        // return data;
-
-        // MOCK IMPLEMENTATION:
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    secret: 'JBSWY3DPEHPK3PXP', // Mock Base32 Secret
-                    qrCodeUrl: 'otpauth://totp/NeuroVault:admin@secure.net?secret=JBSWY3DPEHPK3PXP&issuer=NeuroVault',
-                    recoveryCodes: ['NV-A8F9-2K3P', 'NV-9L2M-XB4C', 'NV-QT5R-81W2']
-                });
-            }, 600);
-        });
-    },
-
-    // ------------------------------------------------------------------------
-    // ENABLE MFA (Confirm Setup with first OTP)
-    // ------------------------------------------------------------------------
-    enableMfa: async (otp: string): Promise<boolean> => {
-        // REAL IMPLEMENTATION:
-        // const { data } = await api.post('/auth/mfa/enable', { otp });
-        // return data.success;
-
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (otp === '000000') return reject(new Error('Code invalide'));
-                resolve(true);
-            }, 800);
-        });
+  // Connexion
+  async login(email: string, password: string) {
+    const res = await api.post('/auth/login', { email, password });
+    const data = res.data;
+    if (!data.requiresMfa) {
+      TokenService.setToken(data.token);
+      TokenService.setUser(data.user);
     }
+    return {
+      requiresMfa:  data.requiresMfa,
+      mfaTempToken: data.userId,
+      token:        data.token,
+      user:         data.user,
+    };
+  },
+
+  // Vérification MFA
+  async verifyMfa(userId: string, otpCode: string) {
+    const res = await api.post('/auth/mfa/verify', { userId, otpCode });
+    const data = res.data;
+    TokenService.setToken(data.token);
+    TokenService.setUser(data.user);
+    return data;
+  },
+
+  // Setup MFA
+  async setupMfa() {
+    const res = await api.post('/auth/mfa/setup');
+    return res.data;
+  },
+
+  // Confirmer MFA
+  async confirmMfa(otpCode: string) {
+    const res = await api.post('/auth/mfa/confirm', { otpCode });
+    return res.data;
+  },
+
+  // Déconnexion
+  async logout() {
+  try {
+    await api.post('/auth/logout'); // Notifie le backend
+  } catch {}
+  TokenService.clear();
+  window.location.href = '/auth/login';
+  },
+
+  // Utilisateur courant
+  getCurrentUser() {
+    return TokenService.getUser();
+  },
+
+  // Est connecté ?
+  isAuthenticated(): boolean {
+    return !!TokenService.getToken() && !TokenService.isTokenExpired();
+  },
+
 };
+
+export { AuthService };
+export default AuthService;

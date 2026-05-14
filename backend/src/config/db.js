@@ -1,16 +1,27 @@
+const mysql2 = require('mysql2/promise');
 require('dotenv').config();
-const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
-    {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        dialect: 'mysql',
-        logging: false,
-    }
-);
+const pool = mysql2.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  database: process.env.DB_NAME || 'ewallet_db',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
-module.exports = sequelize;
+// Test de connexion au démarrage
+(async () => {
+  try {
+    const conn = await pool.getConnection();
+    console.log('MySQL connecté avec succès');
+    conn.release();
+  } catch (err) {
+    console.error('Erreur connexion MySQL :', err.message);
+    process.exit(1);
+  }
+})();
+
+module.exports = pool;

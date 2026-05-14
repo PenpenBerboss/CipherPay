@@ -1,37 +1,77 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+require('dotenv').config();
+const express      = require('express');
+const helmet       = require('helmet');
+const cors         = require('cors');
 const cookieParser = require('cookie-parser');
-const authRoutes = require('./routes/auth.routes');
-const errorHandler = require('./middlewares/error.middleware');
+const csrf         = require('csurf');
+const { globalLimiter } = require('./middlewares/rateLimit.middleware');
+const authRoutes   = require('./routes/auth.routes');
+const transactionRoutes = require('./routes/transaction.routes');
+const logsRoutes = require('./routes/logs.routes');
+const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
 
-// Middleware de sécurité
-// Helmet configure automatiquement des en-têtes sécurisés (comme HSTS) si le trafic est détecté comme étant HTTPS.
-// En production, la terminaison TLS/SSL doit être gérée par un proxy inverse d'infrastructure (comme Nginx) 
-// qui transfère ensuite le trafic vers cette application en HTTP.
+// ── Sécurité headers HTTP (Helmet) ────────────
 app.use(helmet());
-app.use(cors({ origin: '*', credentials: true })); // À configurer en production (restreindre au domaine du frontend)
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc:  ["'self'"],
+    styleSrc:   ["'self'", "'unsafe-inline'"],
+    imgSrc:     ["'self'", "data:"],
+  },
+}));
 
-// Redirection automatique de HTTP vers HTTPS en production
-app.use((req, res, next) => {
-    // Vérifie si la demande provient d'un proxy qui a terminé la connexion SSL
-    if (req.headers['x-forwarded-proto'] === 'http') {
-        return res.redirect(`https://${req.headers.host}${req.url}`);
-    }
-    next();
+// ── CORS ──────────────────────────────────────
+app.use(cors({
+  origin:      process.env.FRONTEND_URL || 'https://localhost:3000',
+  credentials: true,
+  methods:     ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+}));
+
+// ── Body parser ───────────────────────────────
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: false }));
+
+// ── Cookie parser (requis pour CSRF) ─────────
+app.use(cookieParser());
+
+// ── CSRF Protection ───────────────────────────
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure:   true,
+    sameSite: 'strict',
+  },
 });
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(morgan('dev'));
+// ── Rate limit global ─────────────────────────
+app.use(globalLimiter);
 
-// Routes
-app.use('/api/auth', authRoutes);
+// ── Route pour obtenir le token CSRF ──────────
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
 
-// Gestion des erreurs
-app.use(errorHandler);
+// ── Routes Auth (avec CSRF) ───────────────────
+app.use('/api/auth', csrfProtection, authRoutes);
+app.use('/api/transactions', csrfProtection, transactionRoutes);
+app.use('/api/logs', csrfProtection, logsRoutes);
+// ── Health check (sans CSRF) ──────────────────
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ── Gestion des erreurs ───────────────────────
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({ message: 'Token CSRF invalide ou manquant.' });
+  }
+  next(err);
+});
+
+app.use(errorMiddleware);
 
 module.exports = app;

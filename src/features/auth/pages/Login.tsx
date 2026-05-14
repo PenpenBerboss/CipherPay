@@ -89,12 +89,13 @@ export default function Login() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
         <div className="space-y-2">
-          <Label htmlFor="email">Identifiant Chiffré (Email)</Label>
+          <Label htmlFor="email">Identifiant (Email)</Label>
           <Input 
             id="email" 
             type="email" 
+	    autoComplete="off"
             placeholder="alias@noeud.net" 
             className="bg-background/50 h-11"
             {...register('email')}
@@ -111,7 +112,8 @@ export default function Login() {
             <Input 
               id="password" 
               type={showPassword ? 'text' : 'password'} 
-              placeholder="••••••••" 
+              placeholder="••••••••"
+	      autoComplete="new-password" 
               className="bg-background/50 h-11 pr-10"
               {...register('password')}
             />

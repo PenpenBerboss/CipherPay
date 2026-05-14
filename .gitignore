@@ -6,3 +6,16 @@ coverage/
 *.log
 .env*
 !.env.example
+# Certificats SSL
+backend/certs/
+certs/
+
+# Variables d'environnement
+backend/.env
+.env
+
+# Logs
+backend/logs/
+
+# Fichiers temporaires
+arborescence.txt

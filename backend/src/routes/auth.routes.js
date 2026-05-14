@@ -1,16 +1,22 @@
-const express = require('express');
-const router = express.Router();
+const express    = require('express');
+const router     = express.Router();
 const AuthController = require('../controllers/auth.controller');
+const { validateRegister, validateLogin, validateOtp } = require('../middlewares/validation.middleware');
+const { authLimiter, mfaLimiter, mfaSetupLimiter } = require('../middlewares/rateLimit.middleware');
 const authMiddleware = require('../middlewares/auth.middleware');
-const { validateRegister } = require('../middlewares/validation.middleware');
-const { loginLimiter } = require('../middlewares/rateLimit.middleware');
 
-router.post('/register', validateRegister, AuthController.register);
-router.post('/login', loginLimiter, AuthController.login);
-router.get('/me', authMiddleware, AuthController.me);
+// ── Auth publique ──────────────────────────────
+router.post('/register', authLimiter, validateRegister, AuthController.register);
+router.post('/login',    authLimiter, validateLogin,    AuthController.login);
 
-router.post('/setup-mfa', authMiddleware, AuthController.setupMFA);
-router.post('/verify-mfa', authMiddleware, AuthController.verifyMFA);
-router.post('/refresh', AuthController.refresh);
+// ── MFA ───────────────────────────────────────
+router.post('/mfa/verify',  mfaLimiter, validateOtp, AuthController.verifyMfa);
+
+// ── Routes protégées (JWT requis) ──────────────
+router.get ('/me',          authMiddleware, AuthController.getMe);
+router.post('/mfa/setup', authMiddleware, mfaSetupLimiter, AuthController.setupMfa);
+router.post('/mfa/confirm', authMiddleware, validateOtp, AuthController.confirmMfa);
+
+router.post('/logout', authMiddleware, AuthController.logout);
 
 module.exports = router;

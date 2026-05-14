@@ -18,12 +18,14 @@ export default function SetupMFA() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    const initSetup = async () => {
-      const data = await setupMfa();
-      if (data) setSetupData(data);
-    };
-    initSetup();
-  }, [setupMfa]);
+  let cancelled = false;
+  const initSetup = async () => {
+    const data = await setupMfa();
+    if (!cancelled && data) setSetupData(data);
+  };
+  initSetup();
+  return () => { cancelled = true; };
+}, []); // tableau vide = exécution unique
 
   const copySecret = () => {
     if (setupData) {
@@ -87,7 +89,7 @@ export default function SetupMFA() {
                 <div className="bg-white p-4 rounded-xl inline-block mx-auto border-4 border-emerald-500/30">
                     {/* Placeholder for QR Code since we simulate its generation */}
                     <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(setupData.qrCodeUrl)}`} 
+                        src={setupData.qrCodeUrl} 
                         alt="QR Code" 
                         className="w-48 h-48"
                     />

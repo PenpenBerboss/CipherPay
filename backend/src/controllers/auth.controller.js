@@ -1,71 +1,83 @@
+// backend/src/controllers/auth.controller.js
 const AuthService = require('../services/auth.service');
-const bcrypt = require('bcryptjs');
-const jwtUtil = require('../utils/jwt');
-const totp = require('../utils/totp');
+const User        = require('../models/User');
 
-exports.register = async (req, res, next) => {
+class AuthController {
+
+  static async register(req, res, next) {
     try {
-        const user = await AuthService.register(req.body);
-        res.status(201).json({ message: 'Utilisateur créé' });
-    } catch (error) {
-        next(error);
-    }
-};
+      const { email, password, firstName, lastName } = req.body;
+      const result = await AuthService.register({
+        email, password, firstName, lastName,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      res.status(201).json(result);
+    } catch (err) { next(err); }
+  }
 
-exports.login = async (req, res, next) => {
+  static async login(req, res, next) {
     try {
-        const { email, password } = req.body;
-        const user = await AuthService.findByEmail(email);
+      const { email, password } = req.body;
+      const result = await AuthService.login({
+        email, password,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      res.status(200).json(result);
+    } catch (err) { next(err); }
+  }
 
-        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-            return res.status(401).json({ message: 'Identifiants invalides' });
-        }
-
-        if (user.lock_until && user.lock_until > new Date()) {
-           return res.status(401).json({ message: 'Compte verrouillé, réessayez plus tard.' });
-        }
-        
-        await user.update({ failed_attempts: 0, last_login: new Date() });
-        const token = jwtUtil.generateToken(user);
-        res.status(200).json({ token, user: { uuid: user.uuid, email: user.email } });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// ... (previous imports and methods)
-exports.setupMFA = async (req, res, next) => {
+  static async verifyMfa(req, res, next) {
     try {
-        const secret = totp.generateSecret();
-        await req.user.update({ mfa_secret: secret.base32 });
-        const qrCode = await totp.generateQRCode(secret.otpauth_url);
-        res.json({ secret: secret.base32, qrCode });
-    } catch (error) { next(error); }
-};
+      const { userId, otpCode } = req.body;
+      const result = await AuthService.verifyMfa({
+        userId, otpCode,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      res.status(200).json(result);
+    } catch (err) { next(err); }
+  }
 
-exports.verifyMFA = async (req, res, next) => {
+  static async setupMfa(req, res, next) {
     try {
-        const { token } = req.body;
-        const valid = totp.verifyToken(req.user.mfa_secret, token);
-        if (!valid) return res.status(401).json({ message: 'Code invalide' });
-        await req.user.update({ is_mfa_enabled: true });
-        res.json({ message: 'MFA activé' });
-    } catch (error) { next(error); }
-};
+      const result = await AuthService.setupMfa(req.user.userId);
+      res.status(200).json(result);
+    } catch (err) { next(err); }
+  }
 
-exports.refresh = async (req, res, next) => {
+  static async confirmMfa(req, res, next) {
     try {
-        const { refreshToken } = req.body;
-        if (!refreshToken) return res.status(401).json({ message: 'Token de rafraichissement manquant' });
+      const { otpCode } = req.body;
+      const result = await AuthService.confirmMfa({
+        userId: req.user.userId,
+        otpCode,
+      });
+      res.status(200).json(result);
+    } catch (err) { next(err); }
+  }
 
-        const decoded = jwtUtil.verifyToken(refreshToken);
-        const user = await User.findByPk(decoded.id);
+  static async getMe(req, res, next) {
+    try {
+      const user = await User.findById(req.user.userId);
+      if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
+      res.status(200).json({ user });
+    } catch (err) { next(err); }
+  }
 
-        if (!user) return res.status(401).json({ message: 'Utilisateur introuvable' });
+  static async logout(req, res, next) {
+  try {
+    const ActivityLog = require('../models/ActivityLog');
+    await ActivityLog.log({
+      userId: req.user.userId,
+      action: 'LOGOUT',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    res.status(200).json({ message: 'Déconnexion réussie.' });
+  } catch (err) { next(err); }
+}
+}
 
-        const newAccessToken = jwtUtil.generateToken(user);
-        res.json({ accessToken: newAccessToken });
-    } catch (error) {
-        res.status(401).json({ message: 'Token de rafraichissement invalide' });
-    }
-};
+module.exports = AuthController;

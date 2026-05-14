@@ -7,9 +7,8 @@ export const AUTH_KEYS = {
 export const SECURITY_RULES = {
   MAX_LOGIN_ATTEMPTS: 5,
   LOCKOUT_DURATION_MINUTES: 15,
-  MFA_CODE_LENGTH: 6,
   CODE_RESEND_TIMEOUT_SECONDS: 30,
-};
+ };
 
 // API Base configuration for axios
 export const API_CONFIG = {

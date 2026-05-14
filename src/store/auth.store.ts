@@ -1,57 +1,52 @@
 import { create } from 'zustand';
-import { User } from '../types/auth.types';
-import { TokenService } from '../services/token.service';
+import TokenService from '../services/token.service';
 
-interface AuthStateProp {
-  user: User | null;
-  isAuthenticated: boolean;
-  isMfaPending: boolean;
-  mfaTempToken: string | null;
-  isInitialized: boolean; // Flag to check if we restored session from local storage
-
-  // Actions
-  setAuth: (user: User, token: string) => void;
-  setPendingMfa: (tempToken: string) => void;
-  logout: () => void;
-  initialize: () => void; // Call on app load to restore session
+interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  name?: string;
+  balance: number;
+  totpEnabled: boolean;
+  avatar?: string;
+  securityScore?: number;
 }
 
-export const useAuthStore = create<AuthStateProp>((set) => ({
-  user: null,
-  isAuthenticated: false,
-  isMfaPending: false,
-  mfaTempToken: null,
-  isInitialized: false,
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  pendingMfaUserId: string | null;
+  setAuth: (user: User, token: string) => void;
+  setPendingMfa: (userId: string) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: TokenService.getUser(),
+  token: TokenService.getToken(),
+  isAuthenticated: !!TokenService.getToken() && !TokenService.isTokenExpired(),
+  pendingMfaUserId: null,
 
   setAuth: (user, token) => {
+    const enrichedUser = {
+      ...user,
+      name: `${user.firstName} ${user.lastName}`,
+      securityScore: user.totpEnabled ? 85 : 50,
+    };
     TokenService.setToken(token);
-    // In a real app, you would also securely store the user info (or fetch it on app load using the token)
-    localStorage.setItem('nc_usr_data', JSON.stringify(user));
-    set({ user, isAuthenticated: true, isMfaPending: false, mfaTempToken: null });
+    TokenService.setUser(enrichedUser);
+    set({ token, user: enrichedUser, isAuthenticated: true, pendingMfaUserId: null });
   },
 
-  setPendingMfa: (tempToken) => {
-    set({ isMfaPending: true, mfaTempToken: tempToken, isAuthenticated: false, user: null });
+  setPendingMfa: (userId) => {
+    set({ pendingMfaUserId: userId });
   },
 
   logout: () => {
-    TokenService.clearAll();
-    set({ user: null, isAuthenticated: false, isMfaPending: false, mfaTempToken: null });
+    localStorage.clear();
+    set({ token: null, user: null, isAuthenticated: false, pendingMfaUserId: null });
+    window.location.href = '/auth/register';
   },
-
-  initialize: () => {
-    try {
-      const token = TokenService.getToken();
-      const userDataStr = localStorage.getItem('nc_usr_data');
-      if (token && userDataStr) {
-        const user = JSON.parse(userDataStr);
-        set({ user, isAuthenticated: true, isInitialized: true });
-      } else {
-        set({ isInitialized: true });
-      }
-    } catch {
-      set({ isInitialized: true });
-      TokenService.clearAll();
-    }
-  }
 }));

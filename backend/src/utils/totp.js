@@ -1,19 +1,28 @@
+// backend/src/utils/totp.js
 const speakeasy = require('speakeasy');
-const qrcode = require('qrcode');
+const QRCode    = require('qrcode');
 
-exports.generateSecret = () => {
-    return speakeasy.generateSecret({ name: 'NeuroVault' });
+// Générer un secret TOTP
+const generateSecret = (userEmail) => {
+  return speakeasy.generateSecret({
+    name: `${process.env.TOTP_ISSUER || 'eWallet'}:${userEmail}`,
+    length: 20,
+  });
 };
 
-exports.verifyToken = (secret, token) => {
-    return speakeasy.totp.verify({
-        secret: secret,
-        encoding: 'base32',
-        token: token,
-        window: 1
-    });
+// Générer le QR Code base64
+const generateQRCode = async (otpauthUrl) => {
+  return QRCode.toDataURL(otpauthUrl);
 };
 
-exports.generateQRCode = async (otpauth_url) => {
-    return await qrcode.toDataURL(otpauth_url);
+// Vérifier un code TOTP
+const verifyToken = (secret, token) => {
+  return speakeasy.totp.verify({
+    secret,
+    encoding: 'base32',
+    token,
+    window: 1, // tolérance ±30 secondes
+  });
 };
+
+module.exports = { generateSecret, generateQRCode, verifyToken };
