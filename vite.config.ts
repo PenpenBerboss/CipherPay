@@ -6,6 +6,10 @@ import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
+  const keyPath = './certs/localhost+1-key.pem';
+  const certPath = './certs/localhost+1.pem';
+  const hasCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
+
   return {
     plugins: [react(), tailwindcss()],
     define: {
@@ -17,10 +21,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      https: {
-        key:  fs.readFileSync('./certs/localhost+1-key.pem'),
-        cert: fs.readFileSync('./certs/localhost+1.pem'),
-      },
+      https: hasCerts ? {
+        key:  fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath),
+      } : undefined,
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };

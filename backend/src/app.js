@@ -24,8 +24,11 @@ app.use(helmet.contentSecurityPolicy({
 }));
 
 // ── CORS ──────────────────────────────────────
+const allowedOrigins = ['http://localhost:3000', 'https://localhost:3000'];
+if (process.env.FRONTEND_URL) allowedOrigins.push(process.env.FRONTEND_URL);
+
 app.use(cors({
-  origin:      process.env.FRONTEND_URL || 'https://localhost:3000',
+  origin:      allowedOrigins,
   credentials: true,
   methods:     ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
@@ -42,7 +45,7 @@ app.use(cookieParser());
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    secure:   true,
+    secure:   process.env.NODE_ENV === 'production' || process.env.ENABLE_HTTPS === 'true',
     sameSite: 'strict',
   },
 });

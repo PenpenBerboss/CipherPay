@@ -1,8 +1,10 @@
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000/api';
+
 const api = axios.create({
-  baseURL:         'https://localhost:5000/api',
+  baseURL:         API_BASE_URL,
   timeout:         10000,
   withCredentials: true,
   headers:         { 'Content-Type': 'application/json' },
@@ -12,7 +14,7 @@ let csrfToken: string | null = null;
 
 const fetchCsrfToken = async () => {
   try {
-    const res = await axios.get('https://localhost:5000/api/csrf-token', {
+    const res = await axios.get(`${API_BASE_URL}/csrf-token`, {
       withCredentials: true,
     });
     csrfToken = res.data.csrfToken;
