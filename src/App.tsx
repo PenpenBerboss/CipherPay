@@ -20,6 +20,7 @@ import TransactionDetails from './pages/dashboard/TransactionDetails';
 import Security from './pages/dashboard/Security';
 import Profile from './pages/dashboard/Profile';
 import Logs from './pages/dashboard/Logs';
+import AdminUsers from './pages/dashboard/AdminUsers';
 import NotFound from './pages/NotFound';
 
 function SessionWrapper({ children }: { children: React.ReactNode }) {
@@ -57,6 +58,7 @@ export default function App() {
               <Route path="security/setup-mfa" element={<SetupMFA />} />
               <Route path="profile" element={<Profile />} />
               <Route path="logs" element={<Logs />} />
+              <Route path="admin/users" element={<AdminUsers />} />
             </Route>
           </Route>
 

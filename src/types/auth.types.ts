@@ -1,11 +1,14 @@
 export interface User {
   id: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   name: string;
+  balance?: number;
+  totpEnabled?: boolean;
   securityScore: number;
-  mfaEnabled: boolean;
   avatar?: string;
-  role: 'user' | 'admin';
+  role?: 'user' | 'admin';
   lastLogin?: string;
 }
 
@@ -18,14 +21,13 @@ export interface AuthState {
 }
 
 export interface LoginResponse {
-  user: User;
-  token: string;
+  user?: User;
+  token?: string;
   requiresMfa?: boolean;
-  mfaTempToken?: string;
+  userId?: string;
 }
 
 export interface MfaSetupData {
   secret: string;
-  qrCodeUrl: string;
-  recoveryCodes: string[];
+  qrCode: string;
 }

@@ -1,71 +1,138 @@
-# NeuroVault - Système Cryptographique E-Wallet
+# CipherPay - Système Cryptographique E-Wallet
 
-NeuroVault est une application e-Wallet sécurisée de démonstration, conçue autour du thème de la **"Conception et Réalisation d'un système cryptographique des transactions financières et des données sensibles"**.
+CipherPay est une application e-Wallet sécurisée de démonstration, conçue autour du thème de la **conception et de la réalisation d’un système cryptographique des transactions financières et des données sensibles**.
 
-Le frontend est architecturé pour offrir une expérience utilisateur de type FinTech / Cybersécurité (Glassmorphism, Dark premium, animations fluides), tout en étant **entièrement préparé pour une intégration avec un backend sécurisé Node.js**.
+Le frontend est orienté FinTech / cybersécurité avec une interface sombre, structurée et prête à dialoguer avec un backend Node.js sécurisé.
 
-## 🚀 Fonctionnalités Implémentées
+## Vue d’ensemble
 
-### 🔐 Authentification & Identité Sécurisée
-- **Validation Stricte des Mots de Passe** : Exigences de sécurité (minimum de caractères, majuscule, chiffre, caractère spécial).
-- **Indicateur de Robustesse Dynamique** : Feedback en temps réel avec barre de progression de force du mot de passe.
-- **Protection Anti-Brute Force** : Système de verrouillage de compte (mocké à 15 minutes après 5 tentatives échouées) avec compte à rebours en direct.
-- **Messages d'Erreur Génériques** : Ne révèle jamais si un identifiant existe dans le système pour éviter l'énumération de comptes.
+L’application couvre les parcours principaux suivants :
 
-### 🛡️ Multi-Factor Authentication (MFA / TOTP)
-- **Configuration MFA** : Interface générant un QR Code simulé et une clé secrète pour les applications de type authenticator.
-- **Vérification OTP** : Saisie du code à 6 chiffres avec auto-focus, gestion optimisée du clavier et compte à rebours pour le renvoi.
-- **Workflow Sécurisé** : L'utilisateur navigue via un jeton temporaire vers l'écran d'OTP avant de recevoir son véritable jeton de session JWT.
+- authentification sécurisée
+- vérification OTP / MFA
+- tableau de bord utilisateur
+- transferts et dépôts
+- historique des transactions
+- notifications de sécurité
+- profil, logs et sécurité du compte
+- interface d’administration utilisateur
 
-### 🏗️ Architecture "Backend-Ready"
-- **Zustand State Management** : Séparation de l'état d'authentification (`auth.store.ts`) et de l'état de l'application (`index.ts`).
-- **Axios Interceptors** : Injection automatique du token JWT (`Bearer`) et intercepteur réseau prêt pour la logique de rotation de Refresh Token (erreur `401`).
-- **Guards de Routes React** : 
-  - `AuthGuard` : Restreint l'accès aux pages internes.
-  - `GuestGuard` : Redirige vers le tableau de bord si déjà connecté, gère le routage des étapes OTP en cours de route.
-- **Timeout & Idle Session** : La session locale s'invalide de manière sécurisée en cas d'inactivité (pré-configuré à 1 heure).
+## Fonctionnalités implémentées
 
-### 💳 Dashboard & E-Wallet
-- **Tableau de Bord Global** : Aperçu de la balance du registre cryptographique, graphiques de nœuds synchronisés.
-- **Moteur de Transferts** : Interface transactionnelle en plusieurs étapes pour "signer" et "diffuser" une preuve cryptographique sur le réseau.
-- **Historique des Transactions** : Registre avec recherche, affichage des hashs de transaction et des statuts (Confirmé, En Attente, Rejeté).
-- **Centre de Sécurité** : Suivi du score d'immunité du compte de l'utilisateur, gestion de l'activation/désactivation du MFA et de la biométrie (prêts pour branchement futur).
-- **Journaux d'Activité Système** : Suivi transparent des événements et des adresses IP.
+### Authentification & identité sécurisée
+- validation stricte des mots de passe
+- indicateur dynamique de robustesse
+- protection anti-brute force avec verrouillage temporaire
+- messages d’erreur génériques pour éviter l’énumération des comptes
+- pages de connexion, inscription et vérification OTP
 
-## 🛠️ Stack Technique
+### MFA / TOTP
+- configuration MFA avec QR code simulé et clé secrète
+- vérification OTP à 6 chiffres
+- navigation sécurisée via jeton temporaire avant session complète
+- écran de configuration MFA dédié
 
-- **Framework** : React 18, Vite, TypeScript
-- **Styling** : Tailwind CSS, shadcn/ui (Radix UI)
+### Architecture frontend
+- état global géré avec Zustand
+- services HTTP centralisés avec Axios
+- guards de routes React
+- gestion de session et d’inactivité
+- composants UI atomiques réutilisables
+
+### Dashboard utilisateur
+- vue synthétique du solde principal
+- actions rapides pour envoyer, déposer et actualiser
+- carte portefeuille simplifiée
+- indicateurs identité / sécurité
+- indicateur réseau
+- liste des mouvements récents
+- accès aux détails d’une transaction
+
+### Notifications de sécurité
+- bouton de notifications dans l’en-tête du dashboard
+- panneau de notifications superposé correctement au-dessus du contenu
+- lecture individuelle ou globale des notifications
+- séparation claire entre les notifications de sécurité et le reste de l’interface
+
+### Améliorations visuelles récentes
+- dashboard rendu plus épuré et plus aéré
+- réduction des effets lourds sur les sections principales
+- suppression des ombres marquées sur les cartes du dashboard
+- hiérarchie visuelle allégée pour éviter les superpositions gênantes
+- meilleure lisibilité des blocs principaux et des cartes de synthèse
+
+### Sécurité & supervision
+- journal d’activité système
+- suivi du score de sécurité du compte
+- pages de sécurité et de profil
+- préparation à des extensions futures côté biométrie et MFA renforcée
+
+## Stack technique
+
+- **Framework** : React 19, Vite, TypeScript
+- **Styling** : Tailwind CSS, shadcn/ui
 - **State Management** : Zustand
 - **Animations** : Framer Motion
-- **Formulaires & Validations** : React Hook Form, Zod
-- **Routage** : React Router v6
-- **Requêtes API / HTTP** : Axios
+- **Formulaires & validation** : React Hook Form, Zod
+- **Routage** : React Router
+- **HTTP** : Axios
+- **Graphiques** : Recharts
 - **Icônes** : Lucide React
 
-## 🔌 Intégration Backend (À Venir)
+## Structure du projet
 
-Le projet est doté de commentaires ("NODE.JS INTEGRATION NOTE") dans de nombreux fichiers clés (ex: `src/services/auth.service.ts`, `src/services/api.ts`).
-Ces indications guident le déploiement des véritables mécanismes serveurs :
-
-1. Relier `AuthService` aux vraies routes Node.js/Express.
-2. Implémenter et remplacer par `speakeasy` ou `otplib` dans l'API pour les secrets TOTP partagés.
-3. Supprimer JWT de la génération locale (`mock/auth.ts`) pour utiliser la vraie vérification asymétrique du serveur.
-4. Compléter la logique asynchrone des services financiers simulés du Tableau de Bord.
-
-## 📂 Structure du Répertoire
 ```text
 src/
 ├── components/
-│   ├── auth/         # Composants liés à l'authentification (Input OTP, Barre de robustesse, Verrouillage)
-│   ├── guards/       # Protection des accès aux routes React
-│   ├── layout/       # Squelettes visuels (Navbar, Sidebar)
-│   └── ui/           # Composants atomiques (Boutons, Input, Card) via shadcn
-├── hooks/            # Hooks personnalisés (MFA, password, timeout idle session)
-├── mock/             # Données mockées (Utilisateurs de base, Transactions, JWT Factice)
-├── pages/            # Écrans principaux (Login, Register, Dashboard, Security...)
-├── services/         # Layer réseau HTTP (Axios interceptor, Token storage, Auth proxy)
-├── store/            # Magasins Zustand liés à l'authentification et au Core
-├── types/            # Interfaces et définitions TypeScript
-└── utils/            # Constantes et schémas de validation Zod
+│   ├── auth/         # OTP, robustesse mot de passe, état compte verrouillé
+│   ├── dashboard/    # Modales et éléments liés au dashboard
+│   ├── guards/       # Protection des routes
+│   ├── layout/       # Layout global auth / dashboard
+│   └── ui/           # Composants UI atomiques
+├── features/         # Parcours métier, notamment auth
+├── hooks/            # Hooks personnalisés
+├── mock/             # Données mockées
+├── pages/            # Pages principales et dashboard
+├── services/         # Accès API et abstractions réseau
+├── store/            # États globaux Zustand
+├── types/            # Types TypeScript
+└── utils/            # Constantes, validations et helpers
 ```
+
+## Lancement
+
+1. Installer les dépendances :
+   ```bash
+   npm install
+   ```
+
+2. Démarrer le frontend :
+   ```bash
+   npm run dev
+   ```
+
+3. Ouvrir l’application :
+   - `http://localhost:3000`
+
+## Notes d’intégration backend
+
+Le frontend est déjà structuré pour consommer un backend réel via les services présents dans `src/services/` :
+
+- authentification
+- transactions
+- notifications
+- stockage et rotation du token
+- synchronisation du solde utilisateur
+
+## Points importants de l’interface
+
+- le dashboard privilégie maintenant une lecture plus claire
+- les sections sont plus légères visuellement
+- les notifications sont affichées au-dessus du contenu principal
+- les cartes ne projettent plus d’ombres massives sur les blocs du dashboard
+
+## Commandes utiles
+
+- `npm run dev` : lancer le serveur de développement
+- `npm run build` : générer la version de production
+- `npm run lint` : vérifier les types TypeScript

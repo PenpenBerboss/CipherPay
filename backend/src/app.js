@@ -8,6 +8,7 @@ const { globalLimiter } = require('./middlewares/rateLimit.middleware');
 const authRoutes   = require('./routes/auth.routes');
 const transactionRoutes = require('./routes/transaction.routes');
 const logsRoutes = require('./routes/logs.routes');
+const notificationsRoutes = require('./routes/notifications.routes');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
@@ -62,6 +63,7 @@ app.get('/api/csrf-token', csrfProtection, (req, res) => {
 app.use('/api/auth', csrfProtection, authRoutes);
 app.use('/api/transactions', csrfProtection, transactionRoutes);
 app.use('/api/logs', csrfProtection, logsRoutes);
+app.use('/api/notifications', csrfProtection, notificationsRoutes);
 // ── Health check (sans CSRF) ──────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

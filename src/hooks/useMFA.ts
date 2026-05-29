@@ -15,11 +15,9 @@ export const useMFA = () => {
     setError(null);
     try {
       const data = await AuthService.setupMfa();
-      // Notre backend renvoie { secret, qrCode } (base64)
-      // SetupMFA.tsx attend { secret, qrCodeUrl }
       return {
-        secret:    data.secret,
-        qrCodeUrl: data.qrCode, // base64 data URL
+        secret: data.secret,
+        qrCode: data.qrCode,
       };
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors du setup MFA.');

@@ -20,6 +20,20 @@ class ActivityLog {
     );
     return rows;
   }
+
+  static async getAll({ limit = 100, offset = 0 } = {}) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 500);
+    const safeOffset = Math.max(Number(offset) || 0, 0);
+
+    const [rows] = await pool.execute(
+      `SELECT * FROM activity_logs
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+      [safeLimit, safeOffset]
+    );
+
+    return rows;
+  }
 }
 
 module.exports = ActivityLog;

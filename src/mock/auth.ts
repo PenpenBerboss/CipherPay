@@ -1,13 +1,13 @@
 import { User } from '../types/auth.types';
 
-export const mockUsers: Record<string, User & { passwordHash: string }> = {
+export const mockUsers: Record<string, User & { passwordHash: string; totpEnabled: boolean }> = {
   'test@node.net': {
     id: 'usr_01H8X',
     email: 'test@node.net',
     name: 'Cipher Operative',
     passwordHash: 'mocked_hash_123', // In reality, NEVER store clear text. Backend uses bcrypt.compare()
     securityScore: 85,
-    mfaEnabled: true,
+    totpEnabled: true,
     role: 'user',
     lastLogin: new Date().toISOString()
   },
@@ -17,7 +17,7 @@ export const mockUsers: Record<string, User & { passwordHash: string }> = {
     name: 'Root Administrator',
     passwordHash: 'mocked_hash_admin',
     securityScore: 100,
-    mfaEnabled: false, // For testing MFA setup
+    totpEnabled: false, // For testing MFA setup
     role: 'admin',
     lastLogin: new Date().toISOString()
   }

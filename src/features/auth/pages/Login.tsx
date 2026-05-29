@@ -43,8 +43,8 @@ export default function Login() {
     try {
       const response = await AuthService.login(data.email, data.password);
       
-      if (response.requiresMfa && response.mfaTempToken) {
-        setPendingMfa(response.mfaTempToken);
+      if (response.requiresMfa && response.userId) {
+        setPendingMfa(response.userId);
         navigate('/verify-otp');
       } else if (response.user && response.token) {
         setAuth(response.user, response.token);

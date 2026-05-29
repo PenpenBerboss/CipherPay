@@ -71,7 +71,9 @@ export const OtpInput = ({ length = 6, value, onChange, onComplete, disabled = f
       {Array.from({ length }).map((_, index) => (
         <Input
           key={index}
-          ref={(el) => (inputRefs.current[index] = el)}
+          ref={(el) => {
+            inputRefs.current[index] = el;
+          }}
           className="w-12 h-14 text-center text-xl font-mono glass-panel border-primary/20 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary"
           value={value[index] || ''}
           onChange={(e) => handleChange(index, e)}

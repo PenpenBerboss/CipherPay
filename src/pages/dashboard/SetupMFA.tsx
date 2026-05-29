@@ -89,7 +89,7 @@ export default function SetupMFA() {
                 <div className="bg-white p-4 rounded-xl inline-block mx-auto border-4 border-emerald-500/30">
                     {/* Placeholder for QR Code since we simulate its generation */}
                     <img 
-                        src={setupData.qrCodeUrl} 
+                        src={setupData.qrCode} 
                         alt="QR Code" 
                         className="w-48 h-48"
                     />

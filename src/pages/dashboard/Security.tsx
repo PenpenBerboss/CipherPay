@@ -35,7 +35,7 @@ export default function Security() {
           <Card className="bg-card/40 border-border">
             <CardContent className="p-4 flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className={`p-3 rounded-full ${user?.mfaEnabled ? 'bg-primary/10 text-primary' : 'border border-border text-muted-foreground'}`}>
+                <div className={`p-3 rounded-full ${user?.totpEnabled ? 'bg-primary/10 text-primary' : 'border border-border text-muted-foreground'}`}>
                   <Smartphone className="w-6 h-6" />
                 </div>
                 <div>
@@ -43,7 +43,7 @@ export default function Security() {
                   <p className="text-xs text-muted-foreground">Nécessite une seconde preuve lors de la connexion au nœud.</p>
                 </div>
               </div>
-              {user?.mfaEnabled ? (
+              {user?.totpEnabled ? (
                 <Button variant="outline" className="border-emerald-500 text-emerald-500 hover:bg-emerald-500/10">Actif</Button>
               ) : (
                 <Button variant="default" onClick={() => navigate('/dashboard/security/setup-mfa')}>Configurer</Button>

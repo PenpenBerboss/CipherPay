@@ -124,10 +124,13 @@ CREATE TABLE `transactions` (
   `amount` decimal(10,2) NOT NULL,
   `description` varchar(200) DEFAULT NULL,
   `status` enum('pending','completed','failed') DEFAULT 'pending',
+  `hash` varchar(64) NOT NULL,
+  `signature` varchar(64) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_sender` (`sender_id`),
-  KEY `idx_receiver` (`receiver_id`)
+  KEY `idx_receiver` (`receiver_id`),
+  KEY `idx_transactions_hash` (`hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -155,6 +158,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `first_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
+  `role` varchar(20) NOT NULL DEFAULT 'user',
   `balance` decimal(10,2) DEFAULT 0.00,
   `totp_secret` varchar(255) DEFAULT NULL,
   `totp_enabled` tinyint(1) DEFAULT 0,
@@ -175,9 +179,9 @@ LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 set autocommit=0;
 INSERT INTO `users` VALUES
-('5b44bda3-d1a6-4568-8a81-2e2b63182234','claude@gmail.com','$2a$10$YvODlXe3hI70SWh39JeuJegXXkqKqUMAF0cS7/rmPVc65/Wa.336C','claude','dupont',0.00,'FF4X2YKRGA7EY5KBLVVXIU2TIJKWKOJK',1,0,NULL,'2026-05-13 18:14:19','2026-05-14 17:19:08'),
-('65173d11-487e-422e-9122-26fb11ba1055','test@cipherpay.com','$2a$10$GqAfJ.Vv1BS7XjGhnBPq1uwy8FYpr/utts06s3c7ZdbB/gturh.4e','Jean','Dupont',0.00,NULL,0,0,NULL,'2026-05-13 13:57:06','2026-05-13 13:57:06'),
-('a42e8a1c-0366-4aa3-94ed-caf8cefce15f','penpen@gmail.com','$2a$10$I1bW.Njh1Y4.DzSOcScsl.wbvJESbV9Uvf/ZC6BQRnmMGWWpIVQmi','penpen','Inconnu',0.00,'J43SGWRJNVGTG43BFRTWCMRBNY6CMNJZ',1,0,NULL,'2026-05-14 23:17:17','2026-05-14 23:33:11');
+('5b44bda3-d1a6-4568-8a81-2e2b63182234','claude@gmail.com','$2a$10$YvODlXe3hI70SWh39JeuJegXXkqKqUMAF0cS7/rmPVc65/Wa.336C','claude','dupont','user',0.00,'FF4X2YKRGA7EY5KBLVVXIU2TIJKWKOJK',1,0,NULL,'2026-05-13 18:14:19','2026-05-14 17:19:08'),
+('65173d11-487e-422e-9122-26fb11ba1055','test@cipherpay.com','$2a$10$GqAfJ.Vv1BS7XjGhnBPq1uwy8FYpr/utts06s3c7ZdbB/gturh.4e','Jean','Dupont','user',0.00,NULL,0,0,NULL,'2026-05-13 13:57:06','2026-05-13 13:57:06'),
+('a42e8a1c-0366-4aa3-94ed-caf8cefce15f','penpen@gmail.com','$2a$10$I1bW.Njh1Y4.DzSOcScsl.wbvJESbV9Uvf/ZC6BQRnmMGWWpIVQmi','penpen','Inconnu','user',0.00,'J43SGWRJNVGTG43BFRTWCMRBNY6CMNJZ',1,0,NULL,'2026-05-14 23:17:17','2026-05-14 23:33:11');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
