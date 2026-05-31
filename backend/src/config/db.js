@@ -75,7 +75,7 @@ const ensureSchema = async () => {
         KEY idx_notifications_user_id (user_id),
         KEY idx_notifications_is_read (is_read),
         KEY idx_notifications_created_at (created_at)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci`
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`
     );
   } finally {
     connection.release();
